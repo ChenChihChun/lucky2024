@@ -24,6 +24,8 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class LuckyDrawApp extends JFrame {
     private List<String> sourceList;
@@ -40,7 +42,21 @@ public class LuckyDrawApp extends JFrame {
     private Timer timer;
     private Random random;
 
-    public LuckyDrawApp() {
+	public LuckyDrawApp() throws ClassNotFoundException, InstantiationException, IllegalAccessException,
+			UnsupportedLookAndFeelException {
+		// 设置新的 Look and Feel
+//		for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+//			System.out.println(info.getClassName());
+//		}
+		// UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+//		javax.swing.plaf.metal.MetalLookAndFeel
+//		javax.swing.plaf.nimbus.NimbusLookAndFeel
+//		com.sun.java.swing.plaf.motif.MotifLookAndFeel
+//		com.sun.java.swing.plaf.windows.WindowsLookAndFeel
+//		com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
+
+		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         setTitle("Lucky Draw App");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -250,7 +266,13 @@ public class LuckyDrawApp extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new LuckyDrawApp().setVisible(true);
+				try {
+					new LuckyDrawApp().setVisible(true);
+				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+						| UnsupportedLookAndFeelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         });
     }
