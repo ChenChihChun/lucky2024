@@ -61,7 +61,7 @@ public class LuckyDrawApp extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new FlowLayout(FlowLayout.LEADING));
 
-		Dimension preferredSize = new Dimension(360, 700);
+		Dimension preferredSize = new Dimension(360, 850);
 		setPreferredSize(preferredSize);
 
 		add(new JLabel("資料來源："));
@@ -105,7 +105,9 @@ public class LuckyDrawApp extends JFrame {
 		add(loadButton);
 
         sourceJList = new JList<>(sourceList.toArray(new String[0]));
-		sourcePanel.add(new JScrollPane(sourceJList));
+		JScrollPane sourceListJScrollPane = new JScrollPane(sourceJList);
+		sourceListJScrollPane.setPreferredSize(new Dimension(260, 310));
+		sourcePanel.add(sourceListJScrollPane);
 		add(sourcePanel);
 
 		JPanel textPanel1 = new JPanel();
