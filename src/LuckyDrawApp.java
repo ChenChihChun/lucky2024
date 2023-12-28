@@ -6,9 +6,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -21,6 +21,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.ListModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -40,7 +41,13 @@ public class LuckyDrawApp extends JFrame {
     private JButton stopButton;
     private JProgressBar progressBar;
     private Timer timer;
-    private Random random;
+	private SecureRandom random;
+
+	private int gAddTime = 0;
+	private int gSelectTime = 0;
+	JComboBox selectTimeComboBox;
+
+	private int doLoopTime = 1;
 
 	public LuckyDrawApp() throws ClassNotFoundException, InstantiationException, IllegalAccessException,
 			UnsupportedLookAndFeelException {
@@ -69,7 +76,7 @@ public class LuckyDrawApp extends JFrame {
         sourceList = new ArrayList<>();
         selectedList = new ArrayList<>();
         resultList = new ArrayList<>();
-        random = new Random();
+		random = new SecureRandom();
 
 		JPanel sourcePanel = new JPanel();
 		sourcePanel.setLayout(new BoxLayout(sourcePanel, BoxLayout.X_AXIS));
@@ -96,6 +103,7 @@ public class LuckyDrawApp extends JFrame {
 						sourceJList.setListData(sourceList.toArray(new String[0]));
 
 						orignalList.addAll(names);
+
 					} catch (IOException ex) {
 						ex.printStackTrace();
 					}
@@ -133,6 +141,9 @@ public class LuckyDrawApp extends JFrame {
 
 				resultList.clear();
 				resultJList.setListData(resultList.toArray(new String[0]));
+
+				gAddTime++;
+				gSelectTime = 1;
 			}
 		});
 
@@ -172,20 +183,35 @@ public class LuckyDrawApp extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-				int resultCount = (int) resultCountComboBox.getSelectedItem();
-				if (selectedList.size() >= resultCount) {
-					startButton.setEnabled(false);
-					stopButton.setEnabled(true);
-					timer.start();
-					progressBar.setMaximum((int) resultCountComboBox.getSelectedItem());
+					int resultCount = (int) resultCountComboBox.getSelectedItem();
+					if (selectedList.size() >= resultCount) {
+						// startButton.setEnabled(false);
+						stopButton.setEnabled(true);
+						timer.start();
+						progressBar.setMaximum((int) resultCountComboBox.getSelectedItem());
 
-					// selectedList.clear();
-					resultList.clear();
-					resultJList.setListData(resultList.toArray(new String[0]));
-				}
+//    					selectedList.clear();
+						resultList.clear();
+						resultJList.setListData(resultList.toArray(new String[0]));
+					} else if (selectedList.size() == 0) {
+					subStartMethond();
+					}
+
+
             }
+
         });
 		add(startButton);
+
+		Integer[] selectCount = new Integer[20];
+		for (int i = 0; i < 20; i++) {
+			selectCount[i] = i + 1;
+		}
+
+		add(new JLabel("抽"));
+		selectTimeComboBox = new JComboBox<>(selectCount);
+		add(selectTimeComboBox);
+		add(new JLabel("次    "));
 
         stopButton = new JButton("Stop");
         stopButton.setEnabled(false);
@@ -197,7 +223,7 @@ public class LuckyDrawApp extends JFrame {
                 timer.stop();
             }
         });
-		add(stopButton);
+		// add(stopButton);
 
         progressBar = new JProgressBar();
 		add(progressBar);
@@ -222,47 +248,76 @@ public class LuckyDrawApp extends JFrame {
         timer = new Timer(500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-				int resultCount = (int) resultCountComboBox.getSelectedItem();
-				if (resultList.size() < resultCount) {
-
-					int selectedIndex = random.nextInt(selectedList.size());
-					String luckyGuy = selectedList.get(selectedIndex);
-					selectedList.remove(selectedIndex);
-					resultList.add(luckyGuy);
-					resultJList.setListData(resultList.toArray(new String[0]));
-
-					progressBar.setValue(resultList.size());
-                } else {
-                    stopButton.setEnabled(false);
-					startButton.setEnabled(false);
-                    timer.stop();
-
-					String result = "中獎人為：";
-					for (String tmp : resultList) {
-						result = result.concat(tmp).concat("、");
-					}
-					result = result.substring(0, result.length() - 1);
-					listModel.add(0, result);
-
-					resultList.clear();
-					selectedList.clear();
-					sourceList.clear();
-					sourceJList.removeAll();
-
-					for (String tmp : orignalList) {
-						sourceList.add(tmp);
-					}
-
-					sourceJList.setListData(sourceList.toArray(new String[0]));
-                }
-            }
-        });
-
+				doTimerEvent(orignalList, listModel);
+			}
+		});
 
 		setResizable(false);
-        pack();
-        setLocationRelativeTo(null);
-    }
+		pack();
+		setLocationRelativeTo(null);
+	}
+
+	private void subStartMethond() {
+		ListModel listM = selectedJList.getModel();
+		for (int i = 0; i < listM.getSize(); i++) {
+			Object obj = listM.getElementAt(i);
+			selectedList.add((String) obj);
+		}
+		gSelectTime++;
+		// startButton.setEnabled(false);
+		stopButton.setEnabled(true);
+		timer.start();
+		progressBar.setMaximum((int) resultCountComboBox.getSelectedItem());
+
+//				selectedList.clear();
+		resultList.clear();
+		resultJList.setListData(resultList.toArray(new String[0]));
+	}
+
+	private void doTimerEvent(ArrayList<String> orignalList, DefaultListModel listModel) {
+		int resultCount = (int) resultCountComboBox.getSelectedItem();
+		if (resultList.size() < resultCount) {
+
+			int selectedIndex = random.nextInt(selectedList.size());
+			String luckyGuy = selectedList.get(selectedIndex);
+			selectedList.remove(selectedIndex);
+			resultList.add(luckyGuy);
+			resultJList.setListData(resultList.toArray(new String[0]));
+
+			progressBar.setValue(resultList.size());
+		} else {
+			stopButton.setEnabled(false);
+			// startButton.setEnabled(false);
+			timer.stop();
+
+			String result = String.format("第 %s 批，抽第 %s 次，中獎人為：", gAddTime, gSelectTime);
+			for (String tmp : resultList) {
+				result = result.concat(tmp).concat("、");
+			}
+			result = result.substring(0, result.length() - 1);
+			listModel.add(0, result);
+
+			resultList.clear();
+			selectedList.clear();
+			sourceList.clear();
+			sourceJList.removeAll();
+
+			for (String tmp : orignalList) {
+				sourceList.add(tmp);
+			}
+
+			sourceJList.setListData(sourceList.toArray(new String[0]));
+
+			if (doLoopTime < (int) selectTimeComboBox.getSelectedItem()) {
+				doLoopTime++;
+				subStartMethond();
+				doTimerEvent(orignalList, listModel);
+			} else if (doLoopTime == (int) selectTimeComboBox.getSelectedItem()) {
+				doLoopTime = 1;
+			}
+
+		}
+	}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
